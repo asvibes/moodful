@@ -203,7 +203,7 @@ function WriteBox({ box, mood, onUpdate, onRemove, onMove, onSave }) {
               onFocus={(e)=>(e.target.style.borderColor=box.accentColor||mood.color)}
               onBlur={(e)=>(e.target.style.borderColor="rgba(255,255,255,0.06)")} />
             <button onClick={()=>onSave(box.id)} disabled={!box.text?.trim()}
-              style={{marginTop:8,width:"100%",padding:"10px 0",borderRadius:11,border:"none",background:(box.text?.trim())?(box.accentColor||mood.color):"rgba(255,255,255,0.05)",color:(box.text?.trim())?"#fff":"#444",fontFamily:"Fraunces,Georgia,serif",fontSize:13,fontWeight:700,cursor:(box.text?.trim())?"pointer":"not-allowed",transition:"all 0.2s",boxShadow:(box.text?.trim())?"0 4px 14px "+(box.accentColor||mood.color)+"40":"none"}}>
+              style={{marginTop:8,width:"100%",padding:"10px 0",borderRadius:11,border:"none",background:(box.text&&box.text.trim().length>0)?(box.accentColor||mood.color):"rgba(255,255,255,0.05)",color:(box.text?.trim())?"#fff":"#444",fontFamily:"Fraunces,Georgia,serif",fontSize:13,fontWeight:700,cursor:(box.text?.trim())?"pointer":"not-allowed",transition:"all 0.2s",boxShadow:(box.text?.trim())?"0 4px 14px "+(box.accentColor||mood.color)+"40":"none"}}>
               Pin Entry
             </button>
           </div>

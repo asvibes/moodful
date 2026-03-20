@@ -13,7 +13,7 @@ export function InsightsPage({ allMoods, onBack }) {
   const maxCount = Math.max(...moodCounts.map((m) => m.count), 1);
   const analyse = async () => { setLoading(true); setError(null); try { setResult(await analyseWithGemini(allMoods, allEntries)); } catch { setError("Could not connect to AI. Try again."); } setLoading(false); };
   return (
-    <div style={{ position:"fixed", inset:0, zIndex:100, background:"#0F0F13", transform:animIn?"translateX(0)":"translateX(100%)", transition:"transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)", overflowY:"auto" }}>
+    <div style={{ position:"fixed", inset:0, zIndex:999, background:"#0F0F13", transform:animIn?"translateX(0)":"translateX(100%)", transition:"transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)", overflowY:"auto" }}>
       <div style={{ maxWidth:640, margin:"0 auto", padding:"32px 20px 80px" }}>
         <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:32 }}>
           <button onClick={()=>{setAnimIn(false);setTimeout(onBack,350);}} style={{ background:"#1a1a20", border:"1px solid #2a2a30", borderRadius:12, padding:"8px 18px", color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"Fraunces, Georgia, serif" }}>Back</button>
