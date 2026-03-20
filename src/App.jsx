@@ -6,15 +6,37 @@ import { JournalPage } from "./components/JournalPage";
 import { InsightsPage } from "./components/InsightsPage";
 import { AuroraBackground } from "./components/AuroraBackground";
 import { SettingsPanel } from "./components/SettingsPanel";
+const loadHomeBg = () => localStorage.getItem("homeBg") || null;
+const loadHomeBgColor = () => localStorage.getItem("homeBgColor") || null;
 export default function App() {
   const { allMoods, addMood, deleteMood } = useMoods();
   const [activeMood, setActiveMood] = useState(null);
   const [showInsights, setShowInsights] = useState(false);
-  const [homeBg, setHomeBg] = useState(null);
-  const [homeBgColor, setHomeBgColor] = useState(null);
-  const handleBgPhoto = (e) => { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=(ev)=>{ setHomeBg(ev.target.result); setHomeBgColor(null); }; r.readAsDataURL(f); };
-  const handleBgColor = (color) => { setHomeBgColor(color); setHomeBg(null); };
-  const handleReset = () => { setHomeBg(null); setHomeBgColor(null); };
+  const [homeBg, setHomeBg] = useState(loadHomeBg);
+  const [homeBgColor, setHomeBgColor] = useState(loadHomeBgColor);
+  const handleBgPhoto = (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = (ev) => {
+      setHomeBg(ev.target.result);
+      setHomeBgColor(null);
+      localStorage.setItem("homeBg", ev.target.result);
+      localStorage.removeItem("homeBgColor");
+    };
+    r.readAsDataURL(f);
+  };
+  const handleBgColor = (color) => {
+    setHomeBgColor(color);
+    setHomeBg(null);
+    localStorage.setItem("homeBgColor", color);
+    localStorage.removeItem("homeBg");
+  };
+  const handleReset = () => {
+    setHomeBg(null);
+    setHomeBgColor(null);
+    localStorage.removeItem("homeBg");
+    localStorage.removeItem("homeBgColor");
+  };
   return (
     <>
       <style>{`
