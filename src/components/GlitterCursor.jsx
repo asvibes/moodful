@@ -1,27 +1,40 @@
 ﻿import { useEffect } from "react";
 export function GlitterCursor({ color }) {
   useEffect(() => {
-    const particles = [];
-    const colors = [color || "#fff", "#FFD700", "#FF69B4", "#00FFFF", "#fff"];
+    const style = document.createElement("style");
+    style.innerHTML = "@keyframes glitter{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}";
+    document.head.appendChild(style);
+    let last = 0;
     const onMove = (e) => {
+      const now = Date.now();
+      if (now - last < 30) return;
+      last = now;
       for (let i = 0; i < 4; i++) {
         const p = document.createElement("div");
-        const size = Math.random() * 8 + 4;
-        const tx = (Math.random() - 0.5) * 80;
-        const ty = (Math.random() - 0.5) * 80;
-        const col = colors[Math.floor(Math.random() * colors.length)];
-        p.style.cssText = "position:fixed;pointer-events:none;z-index:9999;border-radius:50%;background:" + col + ";box-shadow:0 0 6px " + col + ";width:" + size + "px;height:" + size + "px;left:" + (e.clientX - size/2) + "px;top:" + (e.clientY - size/2) + "px;transition:all 0.8s ease-out;opacity:1;";
+        const size = Math.random() * 4 + 2;
+        const tx = ((Math.random() - 0.5) * 20) + "px";
+        const ty = (-(Math.random() * 20 + 5)) + "px";
+        const colors = [color||"#fff","#FFD700","#FF9FF3","#fff"];
+        const col = colors[Math.floor(Math.random()*colors.length)];
+        p.style.position = "fixed";
+        p.style.pointerEvents = "none";
+        p.style.zIndex = "99999";
+        p.style.width = size+"px";
+        p.style.height = size+"px";
+        p.style.borderRadius = "50%";
+        p.style.background = col;
+        p.style.boxShadow = "0 0 "+size+"px "+col;
+        p.style.left = (e.clientX + (Math.random()-0.5)*10 - size/2)+"px";
+        p.style.top = (e.clientY - size/2)+"px";
+        p.style.setProperty("--tx", tx);
+        p.style.setProperty("--ty", ty);
+        p.style.animation = "glitter 0.6s ease-out forwards";
         document.body.appendChild(p);
-        particles.push(p);
-        requestAnimationFrame(() => {
-          p.style.transform = "translate(" + tx + "px," + ty + "px) scale(0)";
-          p.style.opacity = "0";
-        });
-        setTimeout(() => { p.remove(); }, 900);
+        setTimeout(() => p.remove(), 650);
       }
     };
     window.addEventListener("mousemove", onMove);
-    return () => window.removeEventListener("mousemove", onMove);
+    return () => { window.removeEventListener("mousemove", onMove); document.head.removeChild(style); };
   }, [color]);
   return null;
 }
