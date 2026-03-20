@@ -8,7 +8,6 @@ const fmtTime = (ts) => new Date(ts).toLocaleTimeString("en-US",{hour:"2-digit",
 const BG_TITLE_KEY = (id) => "title_"+id;
 const BG_BRIGHT_KEY = (id) => "bright_"+id;
 const BG_IMG_POS_KEY = (id) => "imgpos_"+id;
-const BG_IMG_ZOOM_KEY = (id) => "imgzoom_"+id;
 export function JournalPage({ mood, onBack }) {
   const [entries, setEntries] = useState(() => loadJournal(mood.id));
   const [text, setText] = useState("");
@@ -21,7 +20,6 @@ export function JournalPage({ mood, onBack }) {
   const [title, setTitle] = useState(() => localStorage.getItem(BG_TITLE_KEY(mood.id)) || mood.label);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [imgPos, setImgPos] = useState(() => { try { return JSON.parse(localStorage.getItem(BG_IMG_POS_KEY(mood.id)) || "{}"); } catch { return {}; } });
-  const [imgZoom, setImgZoom] = useState(() => parseFloat(localStorage.getItem(BG_IMG_ZOOM_KEY(mood.id)) || "1"));
   const resizing = useRef(false);
   const resizeStart = useRef(0);
   const resizeStartW = useRef(0);
@@ -29,7 +27,7 @@ export function JournalPage({ mood, onBack }) {
   const save = () => { if (!text.trim()) return; setEntries(addJournalEntry(mood.id, text.trim(), 40, entries.length*180+520)); setText(""); };
   const remove = (id) => setEntries(deleteJournalEntry(mood.id, id));
   const moveEntry = (id, x, y) => setEntries(updateEntryPos(mood.id, id, x, y));
-  const handleBgImage = (e) => { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=(ev)=>{ saveImage(mood.id,ev.target.result); setImage(ev.target.result); setImgPos({}); setImgZoom(1); localStorage.removeItem(BG_IMG_POS_KEY(mood.id)); localStorage.removeItem(BG_IMG_ZOOM_KEY(mood.id)); }; r.readAsDataURL(f); };
+  const handleBgImage = (e) => { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=(ev)=>{ saveImage(mood.id,ev.target.result); setImage(ev.target.result); setImgPos({}); localStorage.removeItem(BG_IMG_POS_KEY(mood.id)); }; r.readAsDataURL(f); };
   const handleStickerUpload = (e) => { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=(ev)=>{ const s={id:Date.now(),src:ev.target.result,x:200,y:400,w:120}; const u=[...stickers,s]; setStickers(u); saveStickers(mood.id,u); }; r.readAsDataURL(f); };
   const removeSticker = (id) => { const u=stickers.filter(s=>s.id!==id); setStickers(u); saveStickers(mood.id,u); };
   const moveSticker = (id,x,y) => { const u=stickers.map(s=>s.id===id?{...s,x,y}:s); setStickers(u); saveStickers(mood.id,u); };
@@ -38,33 +36,24 @@ export function JournalPage({ mood, onBack }) {
   const setBright = (v) => { setBrightness(v); localStorage.setItem(BG_BRIGHT_KEY(mood.id), v); };
   const saveTitle = (v) => { setTitle(v); localStorage.setItem(BG_TITLE_KEY(mood.id), v); };
   const updateImgPos = (key, val) => { const np={...imgPos,[key]:val}; setImgPos(np); localStorage.setItem(BG_IMG_POS_KEY(mood.id),JSON.stringify(np)); };
-  const updateImgZoom = (v) => { setImgZoom(v); localStorage.setItem(BG_IMG_ZOOM_KEY(mood.id),v); };
-  const resetImgAdj = () => { setImgPos({}); setImgZoom(1); localStorage.removeItem(BG_IMG_POS_KEY(mood.id)); localStorage.removeItem(BG_IMG_ZOOM_KEY(mood.id)); };
+  const resetImgAdj = () => { setImgPos({}); localStorage.removeItem(BG_IMG_POS_KEY(mood.id)); };
   const pageH = Math.max(window.innerHeight, entries.length*200+800);
   function hexToRgb(hex) { try { const r=parseInt(hex.slice(1,3),16); const g=parseInt(hex.slice(3,5),16); const b=parseInt(hex.slice(5,7),16); return r+","+g+","+b; } catch { return "100,100,200"; } }
-  const imgStyle = {
-    width: "100%", height: "100%",
-    objectFit: imgPos.fit || "cover",
-    objectPosition: (imgPos.x||50)+"% "+(imgPos.y||50)+"%",
-    transform: "scale("+imgZoom+")",
-    transformOrigin: (imgPos.x||50)+"% "+(imgPos.y||50)+"%",
-    transition: "transform 0.2s, object-position 0.2s",
-  };
+  const imgStyle = { width:"100%", height:"100%", objectFit:imgPos.fit||"cover", objectPosition:(imgPos.x||50)+"% "+(imgPos.y||50)+"%", transition:"object-position 0.2s" };
   return (
     <div style={{position:"fixed",inset:0,zIndex:100,transform:animIn?"translateX(0)":"translateX(100%)",transition:"transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",overflowY:"auto",overflowX:"hidden"}}>
       <div style={{position:"fixed",inset:0,zIndex:0,overflow:"hidden"}}>
         {image ? <img src={image} alt="" style={imgStyle} />
           : bgColor ? <div style={{position:"absolute",inset:0,background:bgColor}} />
           : <AuroraBackground colors={mood.aurora} style={{borderRadius:0}} />}
-        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,"+brightness+")"}} />
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,"+brightness+")",transition:"background 0.3s"}} />
       </div>
       <div style={{position:"relative",zIndex:1,minHeight:pageH+"px",width:"100%"}}>
         {/* Glass top bar */}
         <div style={{position:"sticky",top:0,zIndex:50,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 20px",background:"rgba(255,255,255,0.08)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:"1px solid rgba(255,255,255,0.12)",boxShadow:"0 4px 30px rgba(0,0,0,0.2)"}}>
           <button onClick={goBack} style={{background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:10,padding:"7px 16px",color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"Fraunces,Georgia,serif",flexShrink:0}}>Back</button>
           <div style={{flex:1,display:"flex",justifyContent:"center",padding:"0 16px"}}>
-            <h1 onClick={()=>{ const t=prompt("Rename journal:",title); if(t) saveTitle(t); }}
-              title="Click to rename"
+            <h1 onClick={()=>{ const t=prompt("Rename journal:",title); if(t) saveTitle(t); }} title="Click to rename"
               style={{fontFamily:"Fraunces,Georgia,serif",fontSize:24,fontWeight:700,color:"#fff",margin:0,cursor:"pointer",textShadow:"0 2px 12px rgba(0,0,0,0.4)",borderBottom:"1px dashed rgba(255,255,255,0.2)",paddingBottom:2}}>
               {title}
             </h1>
@@ -106,38 +95,24 @@ export function JournalPage({ mood, onBack }) {
                 </label>
                 {(image||bgColor) && <button onClick={()=>{ removeImage(mood.id); setImage(null); saveBgColor(mood.id,""); setBgColor(null); setSettingsOpen(false); }} style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:10,padding:"10px 12px",color:"#aaa",fontSize:13,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:8}}><span>🌌</span> Reset to Aurora</button>}
               </div>
-              {/* Image adjustment — only show when image is set */}
+              {/* Image adjustment */}
               {image && (<>
                 <p style={{fontSize:11,color:"#888",margin:"0 0 8px",letterSpacing:1,textTransform:"uppercase"}}>Image Adjustment</p>
                 <div style={{background:"rgba(255,255,255,0.04)",borderRadius:12,padding:14,marginBottom:16,display:"flex",flexDirection:"column",gap:12}}>
-                  {/* Fit mode */}
                   <div>
                     <p style={{fontSize:11,color:"#666",margin:"0 0 6px"}}>Fit Mode</p>
                     <div style={{display:"flex",gap:6}}>
                       {["cover","contain","fill"].map(f=>(
                         <button key={f} onClick={()=>updateImgPos("fit",f)}
-                          style={{flex:1,padding:"6px 0",borderRadius:8,border:"1px solid "+(imgPos.fit===f||(!imgPos.fit&&f==="cover")?"rgba(255,255,255,0.4)":"rgba(255,255,255,0.1)"),background:(imgPos.fit===f||(!imgPos.fit&&f==="cover"))?"rgba(255,255,255,0.15)":"transparent",color:"#fff",fontSize:11,cursor:"pointer",fontWeight:(imgPos.fit===f||(!imgPos.fit&&f==="cover"))?700:400}}>
+                          style={{flex:1,padding:"6px 0",borderRadius:8,border:"1px solid "+((imgPos.fit||"cover")===f?"rgba(255,255,255,0.4)":"rgba(255,255,255,0.1)"),background:(imgPos.fit||"cover")===f?"rgba(255,255,255,0.15)":"transparent",color:"#fff",fontSize:11,cursor:"pointer",fontWeight:(imgPos.fit||"cover")===f?700:400}}>
                           {f}
                         </button>
                       ))}
                     </div>
                   </div>
-                  {/* Zoom */}
                   <div>
                     <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                      <p style={{fontSize:11,color:"#666",margin:0}}>Zoom</p>
-                      <p style={{fontSize:11,color:"#888",margin:0}}>{Math.round(imgZoom*100)}%</p>
-                    </div>
-                    <div style={{display:"flex",alignItems:"center",gap:8}}>
-                      <span style={{fontSize:12,color:"#666"}}>−</span>
-                      <input type="range" min="0.5" max="3" step="0.05" value={imgZoom} onChange={(e)=>updateImgZoom(parseFloat(e.target.value))} style={{flex:1,accentColor:mood.color,cursor:"pointer"}} />
-                      <span style={{fontSize:12,color:"#666"}}>+</span>
-                    </div>
-                  </div>
-                  {/* Horizontal position */}
-                  <div>
-                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                      <p style={{fontSize:11,color:"#666",margin:0}}>Horizontal Position</p>
+                      <p style={{fontSize:11,color:"#666",margin:0}}>Horizontal</p>
                       <p style={{fontSize:11,color:"#888",margin:0}}>{imgPos.x||50}%</p>
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -146,10 +121,9 @@ export function JournalPage({ mood, onBack }) {
                       <span style={{fontSize:12,color:"#666"}}>→</span>
                     </div>
                   </div>
-                  {/* Vertical position */}
                   <div>
                     <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                      <p style={{fontSize:11,color:"#666",margin:0}}>Vertical Position</p>
+                      <p style={{fontSize:11,color:"#666",margin:0}}>Vertical</p>
                       <p style={{fontSize:11,color:"#888",margin:0}}>{imgPos.y||50}%</p>
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -158,7 +132,7 @@ export function JournalPage({ mood, onBack }) {
                       <span style={{fontSize:12,color:"#666"}}>↓</span>
                     </div>
                   </div>
-                  <button onClick={resetImgAdj} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"7px 0",color:"#888",fontSize:12,cursor:"pointer",width:"100%"}}>Reset Adjustments</button>
+                  <button onClick={resetImgAdj} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"7px 0",color:"#888",fontSize:12,cursor:"pointer",width:"100%"}}>Reset Position</button>
                 </div>
               </>)}
               {/* Brightness */}
@@ -197,7 +171,6 @@ export function JournalPage({ mood, onBack }) {
             </div>
           </div>
         </DraggableItem>
-        {/* Sticky entries */}
         {entries.map((entry,i)=>(
           <DraggableItem key={entry.id} initialX={entry.x||60} initialY={entry.y||(520+i*40)} onMove={(x,y)=>moveEntry(entry.id,x,y)}>
             <div style={{background:"rgba("+hexToRgb(mood.color)+",0.12)",backdropFilter:"blur(12px)",borderRadius:16,padding:"14px 16px",border:"1px solid rgba("+hexToRgb(mood.color)+",0.25)",boxShadow:"0 4px 20px rgba(0,0,0,0.3)",maxWidth:320,minWidth:200}}>
@@ -210,7 +183,6 @@ export function JournalPage({ mood, onBack }) {
             </div>
           </DraggableItem>
         ))}
-        {/* Stickers */}
         {stickers.map((s)=>(
           <DraggableItem key={s.id} initialX={s.x} initialY={s.y} onMove={(x,y)=>moveSticker(s.id,x,y)}>
             <div style={{position:"relative"}}>
