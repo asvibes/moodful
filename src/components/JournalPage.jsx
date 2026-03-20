@@ -5,8 +5,10 @@ import { DraggableItem } from "./DraggableItem";
 import { MONTHS } from "../constants/moods";
 const fmtDate = (ts) => { const d = new Date(ts); return MONTHS[d.getMonth()]+" "+d.getDate()+", "+d.getFullYear(); };
 const fmtTime = (ts) => new Date(ts).toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"});
-const BG_TITLE_KEY = (id) => "title_" + id;
-const BG_BRIGHT_KEY = (id) => "bright_" + id;
+const BG_TITLE_KEY = (id) => "title_"+id;
+const BG_BRIGHT_KEY = (id) => "bright_"+id;
+const BG_IMG_POS_KEY = (id) => "imgpos_"+id;
+const BG_IMG_ZOOM_KEY = (id) => "imgzoom_"+id;
 export function JournalPage({ mood, onBack }) {
   const [entries, setEntries] = useState(() => loadJournal(mood.id));
   const [text, setText] = useState("");
@@ -17,8 +19,9 @@ export function JournalPage({ mood, onBack }) {
   const [resizeW, setResizeW] = useState(460);
   const [brightness, setBrightness] = useState(() => parseFloat(localStorage.getItem(BG_BRIGHT_KEY(mood.id)) || "0.45"));
   const [title, setTitle] = useState(() => localStorage.getItem(BG_TITLE_KEY(mood.id)) || mood.label);
-  const [editingTitle, setEditingTitle] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [imgPos, setImgPos] = useState(() => { try { return JSON.parse(localStorage.getItem(BG_IMG_POS_KEY(mood.id)) || "{}"); } catch { return {}; } });
+  const [imgZoom, setImgZoom] = useState(() => parseFloat(localStorage.getItem(BG_IMG_ZOOM_KEY(mood.id)) || "1"));
   const resizing = useRef(false);
   const resizeStart = useRef(0);
   const resizeStartW = useRef(0);
@@ -26,7 +29,7 @@ export function JournalPage({ mood, onBack }) {
   const save = () => { if (!text.trim()) return; setEntries(addJournalEntry(mood.id, text.trim(), 40, entries.length*180+520)); setText(""); };
   const remove = (id) => setEntries(deleteJournalEntry(mood.id, id));
   const moveEntry = (id, x, y) => setEntries(updateEntryPos(mood.id, id, x, y));
-  const handleBgImage = (e) => { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=(ev)=>{ saveImage(mood.id,ev.target.result); setImage(ev.target.result); }; r.readAsDataURL(f); };
+  const handleBgImage = (e) => { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=(ev)=>{ saveImage(mood.id,ev.target.result); setImage(ev.target.result); setImgPos({}); setImgZoom(1); localStorage.removeItem(BG_IMG_POS_KEY(mood.id)); localStorage.removeItem(BG_IMG_ZOOM_KEY(mood.id)); }; r.readAsDataURL(f); };
   const handleStickerUpload = (e) => { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=(ev)=>{ const s={id:Date.now(),src:ev.target.result,x:200,y:400,w:120}; const u=[...stickers,s]; setStickers(u); saveStickers(mood.id,u); }; r.readAsDataURL(f); };
   const removeSticker = (id) => { const u=stickers.filter(s=>s.id!==id); setStickers(u); saveStickers(mood.id,u); };
   const moveSticker = (id,x,y) => { const u=stickers.map(s=>s.id===id?{...s,x,y}:s); setStickers(u); saveStickers(mood.id,u); };
@@ -34,69 +37,65 @@ export function JournalPage({ mood, onBack }) {
   const goBack = () => { setAnimIn(false); setTimeout(onBack,350); };
   const setBright = (v) => { setBrightness(v); localStorage.setItem(BG_BRIGHT_KEY(mood.id), v); };
   const saveTitle = (v) => { setTitle(v); localStorage.setItem(BG_TITLE_KEY(mood.id), v); };
+  const updateImgPos = (key, val) => { const np={...imgPos,[key]:val}; setImgPos(np); localStorage.setItem(BG_IMG_POS_KEY(mood.id),JSON.stringify(np)); };
+  const updateImgZoom = (v) => { setImgZoom(v); localStorage.setItem(BG_IMG_ZOOM_KEY(mood.id),v); };
+  const resetImgAdj = () => { setImgPos({}); setImgZoom(1); localStorage.removeItem(BG_IMG_POS_KEY(mood.id)); localStorage.removeItem(BG_IMG_ZOOM_KEY(mood.id)); };
   const pageH = Math.max(window.innerHeight, entries.length*200+800);
   function hexToRgb(hex) { try { const r=parseInt(hex.slice(1,3),16); const g=parseInt(hex.slice(3,5),16); const b=parseInt(hex.slice(5,7),16); return r+","+g+","+b; } catch { return "100,100,200"; } }
+  const imgStyle = {
+    width: "100%", height: "100%",
+    objectFit: imgPos.fit || "cover",
+    objectPosition: (imgPos.x||50)+"% "+(imgPos.y||50)+"%",
+    transform: "scale("+imgZoom+")",
+    transformOrigin: (imgPos.x||50)+"% "+(imgPos.y||50)+"%",
+    transition: "transform 0.2s, object-position 0.2s",
+  };
   return (
     <div style={{position:"fixed",inset:0,zIndex:100,transform:animIn?"translateX(0)":"translateX(100%)",transition:"transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",overflowY:"auto",overflowX:"hidden"}}>
-      {/* Full page bg */}
-      <div style={{position:"fixed",inset:0,zIndex:0}}>
-        {image ? <img src={image} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+      <div style={{position:"fixed",inset:0,zIndex:0,overflow:"hidden"}}>
+        {image ? <img src={image} alt="" style={imgStyle} />
           : bgColor ? <div style={{position:"absolute",inset:0,background:bgColor}} />
           : <AuroraBackground colors={mood.aurora} style={{borderRadius:0}} />}
         <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,"+brightness+")"}} />
       </div>
-      {/* Scrollable canvas */}
       <div style={{position:"relative",zIndex:1,minHeight:pageH+"px",width:"100%"}}>
         {/* Glass top bar */}
         <div style={{position:"sticky",top:0,zIndex:50,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 20px",background:"rgba(255,255,255,0.08)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:"1px solid rgba(255,255,255,0.12)",boxShadow:"0 4px 30px rgba(0,0,0,0.2)"}}>
           <button onClick={goBack} style={{background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:10,padding:"7px 16px",color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"Fraunces,Georgia,serif",flexShrink:0}}>Back</button>
-          {/* Editable centered title */}
-          <div style={{flex:1,display:"flex",justifyContent:"center",alignItems:"center",padding:"0 16px"}}>
-            {editingTitle ? (
-              <input autoFocus value={title} onChange={(e)=>setTitle(e.target.value)}
-                onBlur={()=>{ saveTitle(title); setEditingTitle(false); }}
-                onKeyDown={(e)=>{ if(e.key==="Enter"){ saveTitle(title); setEditingTitle(false); } }}
-                style={{background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.3)",borderRadius:8,padding:"4px 12px",color:"#fff",fontSize:22,fontWeight:700,fontFamily:"Fraunces,Georgia,serif",outline:"none",textAlign:"center",width:"100%",maxWidth:300}}
-              />
-            ) : (
-              <h1 onClick={()=>setEditingTitle(true)} title="Click to rename"
-                style={{fontFamily:"Fraunces,Georgia,serif",fontSize:24,fontWeight:700,color:"#fff",margin:0,cursor:"pointer",textShadow:"0 2px 12px rgba(0,0,0,0.4)",textAlign:"center",borderBottom:"1px dashed rgba(255,255,255,0.2)",paddingBottom:2}}>
-                {title}
-              </h1>
-            )}
+          <div style={{flex:1,display:"flex",justifyContent:"center",padding:"0 16px"}}>
+            <h1 onClick={()=>{ const t=prompt("Rename journal:",title); if(t) saveTitle(t); }}
+              title="Click to rename"
+              style={{fontFamily:"Fraunces,Georgia,serif",fontSize:24,fontWeight:700,color:"#fff",margin:0,cursor:"pointer",textShadow:"0 2px 12px rgba(0,0,0,0.4)",borderBottom:"1px dashed rgba(255,255,255,0.2)",paddingBottom:2}}>
+              {title}
+            </h1>
           </div>
-          {/* Right controls */}
           <div style={{display:"flex",gap:6,flexShrink:0}}>
-            {/* Settings gear */}
             <button onClick={()=>setSettingsOpen(!settingsOpen)}
               style={{background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:10,padding:"7px 12px",color:"#fff",fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",gap:5,fontFamily:"Fraunces,Georgia,serif",fontWeight:600}}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
               Settings
             </button>
-            {/* Add sticker */}
             <label style={{background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:10,padding:"7px 12px",fontSize:13,color:"#fff",cursor:"pointer",fontWeight:600,fontFamily:"Fraunces,Georgia,serif"}}>
               + Sticker
               <input type="file" accept="image/*" onChange={handleStickerUpload} style={{display:"none"}} />
             </label>
           </div>
         </div>
-        {/* Settings dropdown */}
+        {/* Settings panel */}
         {settingsOpen && (
           <>
             <div onClick={()=>setSettingsOpen(false)} style={{position:"fixed",inset:0,zIndex:48}} />
-            <div style={{position:"fixed",top:68,right:20,zIndex:49,background:"rgba(10,10,16,0.95)",backdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:20,padding:20,width:280,boxShadow:"0 20px 60px rgba(0,0,0,0.6)"}}>
-              <p style={{fontFamily:"Fraunces,Georgia,serif",fontSize:15,fontWeight:700,color:"#fff",margin:"0 0 14px"}}>Journal Settings</p>
+            <div style={{position:"fixed",top:68,right:20,zIndex:49,background:"rgba(10,10,16,0.96)",backdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:20,padding:20,width:300,boxShadow:"0 20px 60px rgba(0,0,0,0.7)",maxHeight:"80vh",overflowY:"auto"}}>
+              <p style={{fontFamily:"Fraunces,Georgia,serif",fontSize:15,fontWeight:700,color:"#fff",margin:"0 0 16px"}}>Journal Settings</p>
               {/* Rename */}
-              <div style={{marginBottom:14}}>
-                <p style={{fontSize:11,color:"#888",margin:"0 0 6px",letterSpacing:1,textTransform:"uppercase"}}>Rename Journal</p>
-                <div style={{display:"flex",gap:6}}>
-                  <input value={title} onChange={(e)=>setTitle(e.target.value)} style={{flex:1,background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"7px 10px",color:"#fff",fontSize:13,outline:"none",fontFamily:"Lora,Georgia,serif"}} />
-                  <button onClick={()=>{ saveTitle(title); setSettingsOpen(false); }} style={{background:mood.color,border:"none",borderRadius:8,padding:"7px 12px",color:"#fff",fontSize:12,cursor:"pointer",fontWeight:700}}>Save</button>
-                </div>
+              <p style={{fontSize:11,color:"#888",margin:"0 0 6px",letterSpacing:1,textTransform:"uppercase"}}>Rename</p>
+              <div style={{display:"flex",gap:6,marginBottom:16}}>
+                <input value={title} onChange={(e)=>setTitle(e.target.value)} style={{flex:1,background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"7px 10px",color:"#fff",fontSize:13,outline:"none"}} />
+                <button onClick={()=>{ saveTitle(title); setSettingsOpen(false); }} style={{background:mood.color,border:"none",borderRadius:8,padding:"7px 12px",color:"#fff",fontSize:12,cursor:"pointer",fontWeight:700}}>Save</button>
               </div>
               {/* Background */}
               <p style={{fontSize:11,color:"#888",margin:"0 0 8px",letterSpacing:1,textTransform:"uppercase"}}>Background</p>
-              <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:14}}>
+              <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:16}}>
                 <label style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:10,padding:"10px 12px",cursor:"pointer",color:"#fff",fontSize:13,display:"flex",alignItems:"center",gap:8}}>
                   <span>🖼️</span> Change Photo
                   <input type="file" accept="image/*" onChange={(e)=>{ handleBgImage(e); setSettingsOpen(false); }} style={{display:"none"}} />
@@ -107,22 +106,76 @@ export function JournalPage({ mood, onBack }) {
                 </label>
                 {(image||bgColor) && <button onClick={()=>{ removeImage(mood.id); setImage(null); saveBgColor(mood.id,""); setBgColor(null); setSettingsOpen(false); }} style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:10,padding:"10px 12px",color:"#aaa",fontSize:13,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:8}}><span>🌌</span> Reset to Aurora</button>}
               </div>
+              {/* Image adjustment — only show when image is set */}
+              {image && (<>
+                <p style={{fontSize:11,color:"#888",margin:"0 0 8px",letterSpacing:1,textTransform:"uppercase"}}>Image Adjustment</p>
+                <div style={{background:"rgba(255,255,255,0.04)",borderRadius:12,padding:14,marginBottom:16,display:"flex",flexDirection:"column",gap:12}}>
+                  {/* Fit mode */}
+                  <div>
+                    <p style={{fontSize:11,color:"#666",margin:"0 0 6px"}}>Fit Mode</p>
+                    <div style={{display:"flex",gap:6}}>
+                      {["cover","contain","fill"].map(f=>(
+                        <button key={f} onClick={()=>updateImgPos("fit",f)}
+                          style={{flex:1,padding:"6px 0",borderRadius:8,border:"1px solid "+(imgPos.fit===f||(!imgPos.fit&&f==="cover")?"rgba(255,255,255,0.4)":"rgba(255,255,255,0.1)"),background:(imgPos.fit===f||(!imgPos.fit&&f==="cover"))?"rgba(255,255,255,0.15)":"transparent",color:"#fff",fontSize:11,cursor:"pointer",fontWeight:(imgPos.fit===f||(!imgPos.fit&&f==="cover"))?700:400}}>
+                          {f}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Zoom */}
+                  <div>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                      <p style={{fontSize:11,color:"#666",margin:0}}>Zoom</p>
+                      <p style={{fontSize:11,color:"#888",margin:0}}>{Math.round(imgZoom*100)}%</p>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <span style={{fontSize:12,color:"#666"}}>−</span>
+                      <input type="range" min="0.5" max="3" step="0.05" value={imgZoom} onChange={(e)=>updateImgZoom(parseFloat(e.target.value))} style={{flex:1,accentColor:mood.color,cursor:"pointer"}} />
+                      <span style={{fontSize:12,color:"#666"}}>+</span>
+                    </div>
+                  </div>
+                  {/* Horizontal position */}
+                  <div>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                      <p style={{fontSize:11,color:"#666",margin:0}}>Horizontal Position</p>
+                      <p style={{fontSize:11,color:"#888",margin:0}}>{imgPos.x||50}%</p>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <span style={{fontSize:12,color:"#666"}}>←</span>
+                      <input type="range" min="0" max="100" step="1" value={imgPos.x||50} onChange={(e)=>updateImgPos("x",parseInt(e.target.value))} style={{flex:1,accentColor:mood.color,cursor:"pointer"}} />
+                      <span style={{fontSize:12,color:"#666"}}>→</span>
+                    </div>
+                  </div>
+                  {/* Vertical position */}
+                  <div>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                      <p style={{fontSize:11,color:"#666",margin:0}}>Vertical Position</p>
+                      <p style={{fontSize:11,color:"#888",margin:0}}>{imgPos.y||50}%</p>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <span style={{fontSize:12,color:"#666"}}>↑</span>
+                      <input type="range" min="0" max="100" step="1" value={imgPos.y||50} onChange={(e)=>updateImgPos("y",parseInt(e.target.value))} style={{flex:1,accentColor:mood.color,cursor:"pointer"}} />
+                      <span style={{fontSize:12,color:"#666"}}>↓</span>
+                    </div>
+                  </div>
+                  <button onClick={resetImgAdj} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"7px 0",color:"#888",fontSize:12,cursor:"pointer",width:"100%"}}>Reset Adjustments</button>
+                </div>
+              </>)}
               {/* Brightness */}
               <p style={{fontSize:11,color:"#888",margin:"0 0 8px",letterSpacing:1,textTransform:"uppercase"}}>Overlay Darkness</p>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
                 <span style={{fontSize:16}}>☀️</span>
-                <input type="range" min="0" max="0.85" step="0.05" value={brightness} onChange={(e)=>setBright(parseFloat(e.target.value))}
-                  style={{flex:1,accentColor:mood.color,cursor:"pointer"}} />
+                <input type="range" min="0" max="0.85" step="0.05" value={brightness} onChange={(e)=>setBright(parseFloat(e.target.value))} style={{flex:1,accentColor:mood.color,cursor:"pointer"}} />
                 <span style={{fontSize:16}}>🌑</span>
               </div>
-              <p style={{fontSize:11,color:"#555",margin:"4px 0 0",textAlign:"center"}}>{Math.round((1-brightness)*100)}% brightness</p>
+              <p style={{fontSize:11,color:"#555",textAlign:"center",margin:0}}>{Math.round((1-brightness)*100)}% brightness</p>
             </div>
           </>
         )}
         {/* Draggable write box */}
         <DraggableItem initialX={40} initialY={100}>
           <div style={{background:"rgba(10,10,16,0.82)",backdropFilter:"blur(16px)",borderRadius:20,padding:20,border:"1px solid rgba(255,255,255,0.1)",boxShadow:"0 8px 40px rgba(0,0,0,0.4)",width:resizeW+"px",position:"relative"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12,cursor:"grab"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
               <div style={{display:"flex",alignItems:"center",gap:6}}>
                 <div style={{width:10,height:10,borderRadius:"50%",background:"#EF4444"}} />
                 <div style={{width:10,height:10,borderRadius:"50%",background:"#FBBF24"}} />
@@ -139,7 +192,7 @@ export function JournalPage({ mood, onBack }) {
               style={{marginTop:10,width:"100%",padding:"11px 0",borderRadius:12,border:"none",background:text.trim()?mood.color:"rgba(255,255,255,0.06)",color:text.trim()?"#fff":"#444",fontFamily:"Fraunces,Georgia,serif",fontSize:14,fontWeight:700,cursor:text.trim()?"pointer":"not-allowed",transition:"all 0.2s",boxShadow:text.trim()?"0 4px 16px "+mood.color+"50":"none"}}>
               Pin Entry
             </button>
-            <div onMouseDown={startResize} style={{position:"absolute",right:0,top:0,bottom:0,width:8,cursor:"ew-resize",borderRadius:"0 20px 20px 0",background:"rgba(255,255,255,0.04)"}}>
+            <div onMouseDown={startResize} style={{position:"absolute",right:0,top:0,bottom:0,width:8,cursor:"ew-resize",borderRadius:"0 20px 20px 0"}}>
               <div style={{position:"absolute",right:2,top:"50%",transform:"translateY(-50%)",width:3,height:30,borderRadius:2,background:"rgba(255,255,255,0.15)"}} />
             </div>
           </div>
