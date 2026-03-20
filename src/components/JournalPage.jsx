@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { loadJournal, addJournalEntry, deleteJournalEntry, updateEntryPos, loadImage, saveImage, removeImage, loadBgColor, saveBgColor, loadStickers, saveStickers } from "../utils/storage";
 import { AuroraBackground } from "./AuroraBackground";
 import { DraggableItem } from "./DraggableItem";
@@ -138,7 +138,7 @@ export function JournalPage({ mood, onBack }) {
                 <button onClick={()=>remove(entry.id)} style={{background:"rgba(220,38,38,0.3)",border:"none",borderRadius:6,padding:"2px 7px",fontSize:10,color:"#ff8888",cursor:"pointer"}}>x</button>
               </div>
               <p style={{fontFamily:"Lora,Georgia,serif",fontSize:14,lineHeight:1.7,color:"#e0e0e0",margin:0,whiteSpace:"pre-wrap",wordBreak:"break-word"}}>{entry.text}</p>
-              <p style={{fontSize:10,color:"rgba(255,255,255,0.35)",margin:"10px 0 0",borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:8}}>{fmtDate(entry.ts)} · {fmtTime(entry.ts)}</p>
+              <p style={{fontSize:10,color:"rgba(255,255,255,0.35)",margin:"10px 0 0",borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:8}}>{fmtDate(entry.ts)} � {fmtTime(entry.ts)}</p>
             </div>
           </DraggableItem>
         ))}
@@ -168,8 +168,8 @@ function WriteBox({ box, mood, onUpdate, onRemove, onMove, onSave }) {
   return (
     <DraggableItem initialX={box.x} initialY={box.y} onMove={(x,y)=>onMove(box.id,x,y)}>
       <div style={{width:box.w+"px",position:"relative",borderRadius:20,overflow:"visible"}}>
-        <div style={{borderRadius:20,background:"rgba(255,255,255,0.06)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.13)",boxShadow:"0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1)",overflow:"hidden",position:"relative"}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px 8px",background:"rgba(255,255,255,0.04)",borderBottom:"1px solid rgba(255,255,255,0.08)",cursor:"grab"}}>
+        <div style={{borderRadius:20,background:"rgba(255,255,255,0.08)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",border:"1px solid rgba(255,255,255,0.18)",boxShadow:"0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15)",overflow:"hidden",position:"relative"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px 8px",background:"rgba(255,255,255,0.06)",backdropFilter:"blur(8px)",borderBottom:"1px solid rgba(255,255,255,0.1)",cursor:"grab"}}>
             <div style={{display:"flex",alignItems:"center",gap:6}}>
               <div style={{width:9,height:9,borderRadius:"50%",background:"#EF4444",opacity:0.8}} />
               <div style={{width:9,height:9,borderRadius:"50%",background:"#FBBF24",opacity:0.8}} />
@@ -197,7 +197,7 @@ function WriteBox({ box, mood, onUpdate, onRemove, onMove, onSave }) {
               <button onClick={()=>onUpdate(box.id,{bgColor:"#0a0a10",textColor:"#e0e0e0",accentColor:mood.color})} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:7,padding:"5px 0",color:"#888",fontSize:11,cursor:"pointer"}}>Reset Colors</button>
             </div>
           )}
-          <div style={{padding:"12px 14px",background:box.bgColor||"#0a0a10"}}>
+          <div style={{padding:"12px 14px",background:box.bgColor||"#0a0a10",backdropFilter:"none"}}>
             <textarea value={box.text||""} onChange={(e)=>onUpdate(box.id,{text:e.target.value})} placeholder="Write freely..." rows={4}
               style={{width:"100%",boxSizing:"border-box",padding:"10px 12px",borderRadius:12,border:"2px solid rgba(255,255,255,0.06)",fontFamily:"Lora,Georgia,serif",fontSize:15,lineHeight:1.75,color:box.textColor||"#e0e0e0",background:"rgba(0,0,0,0.25)",resize:"none",outline:"none",transition:"border-color 0.2s"}}
               onFocus={(e)=>(e.target.style.borderColor=box.accentColor||mood.color)}
@@ -208,7 +208,7 @@ function WriteBox({ box, mood, onUpdate, onRemove, onMove, onSave }) {
             </button>
           </div>
         </div>
-        <div onMouseDown={startResize} style={{position:"absolute",right:-4,top:0,bottom:0,width:8,cursor:"ew-resize",zIndex:10,display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div onMouseDown={startResize} style={{position:"absolute",right:-6,top:0,bottom:0,width:12,cursor:"ew-resize",zIndex:10,display:"flex",alignItems:"center",justifyContent:"center",position:"absolute"}}>
           <div style={{width:3,height:32,borderRadius:2,background:"rgba(255,255,255,0.2)"}} />
         </div>
       </div>
