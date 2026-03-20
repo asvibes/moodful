@@ -5,10 +5,13 @@ import { AddMoodCard } from "./components/AddMoodCard";
 import { JournalPage } from "./components/JournalPage";
 import { InsightsPage } from "./components/InsightsPage";
 import { GlitterCursor } from "./components/GlitterCursor";
+import { AuroraBackground } from "./components/AuroraBackground";
 export default function App() {
   const { allMoods, addMood, deleteMood } = useMoods();
   const [activeMood, setActiveMood] = useState(null);
   const [showInsights, setShowInsights] = useState(false);
+  const [homeBg, setHomeBg] = useState(null);
+  const [homeBgColor, setHomeBgColor] = useState(null);
   return (
     <>
       <style>{`
@@ -18,23 +21,43 @@ export default function App() {
         ::-webkit-scrollbar { width:4px; }
         ::-webkit-scrollbar-thumb { background:#2a2a30; border-radius:4px; }
       `}</style>
-      <GlitterCursor color="#ffffff" />
+      <GlitterCursor color="#aaaaff" />
       {activeMood && <JournalPage mood={activeMood} onBack={()=>setActiveMood(null)} />}
       {showInsights && <InsightsPage allMoods={allMoods} onBack={()=>setShowInsights(false)} />}
-      <div style={{ minHeight:"100vh", background:"#0F0F13", fontFamily:"Lora, Georgia, serif", padding:"36px 20px 60px" }}>
+      {/* Full page background */}
+      <div style={{ position:"fixed", inset:0, zIndex:0 }}>
+        {homeBg
+          ? <img src={homeBg} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+          : homeBgColor
+            ? <div style={{ position:"absolute", inset:0, background:homeBgColor }} />
+            : <AuroraBackground colors={["#2a1a4a","#1a2a4a","#1a3a2a","#2a1a4a"]} style={{ borderRadius:0 }} />}
+        <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.5)" }} />
+      </div>
+      <div style={{ position:"relative", zIndex:1, minHeight:"100vh", fontFamily:"Lora, Georgia, serif", padding:"36px 20px 60px" }}>
         <div style={{ maxWidth:720, margin:"0 auto" }}>
           <div style={{ marginBottom:36, display:"flex", alignItems:"flex-end", justifyContent:"space-between" }}>
             <div>
               <h1 style={{ fontFamily:"Fraunces, Georgia, serif", fontSize:38, fontWeight:700, color:"#fff", letterSpacing:-1, marginBottom:6 }}>moodful</h1>
-              <p style={{ fontSize:14, color:"#555" }}>tap a mood to open your journal</p>
+              <p style={{ fontSize:14, color:"rgba(255,255,255,0.4)" }}>tap a mood to open your journal</p>
             </div>
-            <button onClick={()=>setShowInsights(true)} style={{ background:"linear-gradient(135deg,#54A0FF,#5F27CD)", border:"none", borderRadius:14, padding:"10px 20px", color:"#fff", fontFamily:"Fraunces, Georgia, serif", fontSize:13, fontWeight:700, cursor:"pointer", boxShadow:"0 4px 20px #54A0FF40", whiteSpace:"nowrap" }}>AI Insights</button>
+            <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+              <label style={{ background:"rgba(255,255,255,0.1)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:10, padding:"8px 14px", fontSize:12, color:"#fff", cursor:"pointer", fontWeight:600 }}>
+                BG Photo
+                <input type="file" accept="image/*" onChange={(e)=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=(ev)=>setHomeBg(ev.target.result); r.readAsDataURL(f); }} style={{ display:"none" }} />
+              </label>
+              <label style={{ background:"rgba(255,255,255,0.1)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:10, padding:"8px 14px", fontSize:12, color:"#fff", cursor:"pointer", fontWeight:600 }}>
+                BG Color
+                <input type="color" defaultValue="#0F0F13" onChange={(e)=>{ setHomeBgColor(e.target.value); setHomeBg(null); }} style={{ opacity:0, position:"absolute", width:0, height:0 }} />
+              </label>
+              {(homeBg||homeBgColor) && <button onClick={()=>{ setHomeBg(null); setHomeBgColor(null); }} style={{ background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:10, padding:"8px 12px", fontSize:12, color:"#aaa", cursor:"pointer" }}>Reset</button>}
+              <button onClick={()=>setShowInsights(true)} style={{ background:"linear-gradient(135deg,#54A0FF,#5F27CD)", border:"none", borderRadius:14, padding:"10px 20px", color:"#fff", fontFamily:"Fraunces, Georgia, serif", fontSize:13, fontWeight:700, cursor:"pointer", boxShadow:"0 4px 20px #54A0FF40" }}>AI Insights</button>
+            </div>
           </div>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(155px, 1fr))", gap:16 }}>
             {allMoods.map((mood) => <MoodCard key={mood.id} mood={mood} onClick={setActiveMood} onDelete={deleteMood} />)}
             <AddMoodCard onAdd={addMood} />
           </div>
-          <p style={{ textAlign:"center", marginTop:44, fontSize:12, color:"#2a2a30", letterSpacing:0.5 }}>hover to customise · click to journal · delete any mood</p>
+          <p style={{ textAlign:"center", marginTop:44, fontSize:12, color:"rgba(255,255,255,0.15)", letterSpacing:0.5 }}>hover to customise · click to journal · delete any mood</p>
         </div>
       </div>
     </>
