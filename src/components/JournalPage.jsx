@@ -42,7 +42,7 @@ export function JournalPage({ mood, onBack }) {
   function hexToRgb(hex) { try { const r=parseInt(hex.slice(1,3),16); const g=parseInt(hex.slice(3,5),16); const b=parseInt(hex.slice(5,7),16); return r+","+g+","+b; } catch { return "100,100,200"; } }
   const imgStyle = { width:"100%", height:"100%", objectFit:imgPos.fit||"cover", objectPosition:(imgPos.x||50)+"% "+(imgPos.y||50)+"%", transition:"object-position 0.2s" };
   return (
-    <div style={{position:"fixed",inset:0,zIndex:100,transform:animIn?"translateX(0)":"translateX(100%)",transition:"transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",overflowY:"auto",overflowX:"hidden"}}>
+    <div style={{position:"fixed",inset:0,zIndex:999,transform:animIn?"translateX(0)":"translateX(100%)",transition:"transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",overflowY:"auto",overflowX:"hidden"}}>
       <div style={{position:"fixed",inset:0,zIndex:0,overflow:"hidden"}}>
         {image ? <img src={image} alt="" style={imgStyle} />
           : bgColor ? <div style={{position:"absolute",inset:0,background:bgColor}} />
@@ -208,7 +208,7 @@ function WriteBox({ box, mood, onUpdate, onRemove, onMove, onSave }) {
             </button>
           </div>
         </div>
-        <div onMouseDown={startResize} style={{position:"absolute",right:-6,top:0,bottom:0,width:12,cursor:"ew-resize",zIndex:10,display:"flex",alignItems:"center",justifyContent:"center",position:"absolute"}}>
+        <div onMouseDown={startResize} style={{position:"absolute",right:-6,top:0,bottom:0,width:12,cursor:"ew-resize",zIndex:10,display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div style={{width:3,height:32,borderRadius:2,background:"rgba(255,255,255,0.2)"}} />
         </div>
       </div>

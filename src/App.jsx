@@ -1,4 +1,4 @@
-ï»¿import { useState } from "react";
+import { useState } from "react";
 import { useMoods } from "./hooks/useMoods";
 import { MoodCard } from "./components/MoodCard";
 import { AddMoodCard } from "./components/AddMoodCard";
@@ -48,7 +48,7 @@ export default function App() {
             : <AuroraBackground colors={["#3a1060","#0a2050","#103040","#3a1060"]} style={{borderRadius:0}} />}
         <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,"+brightness+")",transition:"background 0.3s"}} />
       </div>
-      <div style={{position:"relative",zIndex:1,minHeight:"100vh",fontFamily:"Lora,Georgia,serif",padding:"36px 20px 60px"}}>
+      <div style={{position:"relative",zIndex:1,minHeight:"100vh",visibility:activeMood||showInsights?"hidden":"visible",fontFamily:"Lora,Georgia,serif",padding:"36px 20px 60px"}}>
         <div style={{maxWidth:720,margin:"0 auto"}}>
           <div style={{marginBottom:36,display:"flex",alignItems:"flex-start",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
             <div>
@@ -64,7 +64,7 @@ export default function App() {
             {allMoods.map((mood)=><MoodCard key={mood.id} mood={mood} onClick={setActiveMood} onDelete={deleteMood} />)}
             <AddMoodCard onAdd={addMood} />
           </div>
-          <p style={{textAlign:"center",marginTop:44,fontSize:12,color:"rgba(255,255,255,0.15)",letterSpacing:0.5}}>hover to customise Â· click to journal Â· delete any mood</p>
+          <p style={{textAlign:"center",marginTop:44,fontSize:12,color:"rgba(255,255,255,0.15)",letterSpacing:0.5}}>hover to customise · click to journal · delete any mood</p>
         </div>
       </div>
     </>

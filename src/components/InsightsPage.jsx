@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { loadJournal } from "../utils/storage";
 import { analyseWithGemini } from "../utils/gemini";
 export function InsightsPage({ allMoods, onBack }) {
