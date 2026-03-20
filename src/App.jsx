@@ -9,6 +9,7 @@ import { SettingsPanel } from "./components/SettingsPanel";
 const loadHomeBg = () => localStorage.getItem("homeBg") || null;
 const loadHomeBgColor = () => localStorage.getItem("homeBgColor") || null;
 const loadHomeBrightness = () => parseFloat(localStorage.getItem("homeBrightness") || "0.55");
+const loadHomeImgPos = () => { try { return JSON.parse(localStorage.getItem("homeImgPos") || "{}"); } catch { return {}; } };
 export default function App() {
   const { allMoods, addMood, deleteMood } = useMoods();
   const [activeMood, setActiveMood] = useState(null);
@@ -16,6 +17,7 @@ export default function App() {
   const [homeBg, setHomeBg] = useState(loadHomeBg);
   const [homeBgColor, setHomeBgColor] = useState(loadHomeBgColor);
   const [brightness, setBrightness] = useState(loadHomeBrightness);
+  const [imgPos, setImgPos] = useState(loadHomeImgPos);
   const handleBgPhoto = (e) => {
     const f = e.target.files[0]; if (!f) return;
     const r = new FileReader();
@@ -25,6 +27,9 @@ export default function App() {
   const handleBgColor = (color) => { setHomeBgColor(color); setHomeBg(null); localStorage.setItem("homeBgColor", color); localStorage.removeItem("homeBg"); };
   const handleReset = () => { setHomeBg(null); setHomeBgColor(null); localStorage.removeItem("homeBg"); localStorage.removeItem("homeBgColor"); };
   const handleBrightness = (v) => { setBrightness(v); localStorage.setItem("homeBrightness", v); };
+  // Listen for imgPos changes from SettingsPanel via localStorage
+  const handleImgPosChange = () => setImgPos(loadHomeImgPos());
+  const imgStyle = { width:"100%", height:"100%", objectFit:imgPos.fit||"cover", objectPosition:(imgPos.x||50)+"% "+(imgPos.y||50)+"%", transition:"object-position 0.2s" };
   return (
     <>
       <style>{`
@@ -36,10 +41,12 @@ export default function App() {
       {activeMood && <JournalPage mood={activeMood} onBack={()=>setActiveMood(null)} />}
       {showInsights && <InsightsPage allMoods={allMoods} onBack={()=>setShowInsights(false)} />}
       <div style={{position:"fixed",inset:0,zIndex:0,overflow:"hidden"}}>
-        {homeBg ? <img src={homeBg} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} />
-        : homeBgColor ? <div style={{position:"absolute",inset:0,background:homeBgColor}} />
-        : <AuroraBackground colors={["#3a1060","#0a2050","#103040","#3a1060"]} style={{borderRadius:0}} />}
-        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,"+brightness+")"}} />
+        {homeBg
+          ? <img src={homeBg} alt="" style={imgStyle} />
+          : homeBgColor
+            ? <div style={{position:"absolute",inset:0,background:homeBgColor}} />
+            : <AuroraBackground colors={["#3a1060","#0a2050","#103040","#3a1060"]} style={{borderRadius:0}} />}
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,"+brightness+")",transition:"background 0.3s"}} />
       </div>
       <div style={{position:"relative",zIndex:1,minHeight:"100vh",fontFamily:"Lora,Georgia,serif",padding:"36px 20px 60px"}}>
         <div style={{maxWidth:720,margin:"0 auto"}}>
@@ -49,7 +56,7 @@ export default function App() {
               <p style={{fontSize:14,color:"rgba(255,255,255,0.4)"}}>tap a mood to open your journal</p>
             </div>
             <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-              <SettingsPanel homeBg={homeBg} homeBgColor={homeBgColor} onBgPhoto={handleBgPhoto} onBgColor={handleBgColor} onReset={handleReset} onBrightness={handleBrightness} />
+              <SettingsPanel homeBg={homeBg} homeBgColor={homeBgColor} brightness={brightness} onBgPhoto={handleBgPhoto} onBgColor={handleBgColor} onReset={handleReset} onBrightness={handleBrightness} onImgPosChange={handleImgPosChange} />
               <button onClick={()=>setShowInsights(true)} style={{background:"linear-gradient(135deg,#54A0FF,#5F27CD)",border:"none",borderRadius:14,padding:"10px 20px",color:"#fff",fontFamily:"Fraunces,Georgia,serif",fontSize:13,fontWeight:700,cursor:"pointer",boxShadow:"0 4px 20px #54A0FF40"}}>AI Insights</button>
             </div>
           </div>
