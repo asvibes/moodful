@@ -40,7 +40,7 @@ export default function App() {
       `}</style>
       {activeMood && <JournalPage mood={activeMood} onBack={()=>setActiveMood(null)} />}
       {showInsights && <InsightsPage allMoods={allMoods} onBack={()=>setShowInsights(false)} />}
-      <div style={{position:"fixed",inset:0,zIndex:0,overflow:"hidden",visibility:activeMood||showInsights?"hidden":"visible",visibility:activeMood||showInsights?"hidden":"visible"}}>
+      <div style={{position:"fixed",inset:0,zIndex:0,overflow:"hidden",visibility:activeMood||showInsights?"hidden":"visible"}}>
         {homeBg
           ? <img src={homeBg} alt="" style={imgStyle} />
           : homeBgColor
@@ -56,7 +56,7 @@ export default function App() {
               <p style={{fontSize:14,color:"rgba(255,255,255,0.4)"}}>tap a mood to open your journal</p>
             </div>
             <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-              <SettingsPanel homeBg={homeBg} homeBgColor={homeBgColor} brightness={brightness} onBgPhoto={handleBgPhoto} onBgColor={handleBgColor} onReset={handleReset} onBrightness={handleBrightness} onImgPosChange={handleImgPosChange} />
+              <SettingsPanel homeBg={homeBg} homeBgColor={homeBgColor} brightness={brightness} onBgPhoto={handleBgPhoto} onBgColor={handleBgColor} onReset={handleReset} onBrightness={handleBrightness} imgPos={imgPos} onImgPosUpdate={(np)=>setImgPos(np)} />
               <button onClick={()=>setShowInsights(true)} style={{background:"linear-gradient(135deg,#54A0FF,#5F27CD)",border:"none",borderRadius:14,padding:"10px 20px",color:"#fff",fontFamily:"Fraunces,Georgia,serif",fontSize:13,fontWeight:700,cursor:"pointer",boxShadow:"0 4px 20px #54A0FF40"}}>AI Insights</button>
             </div>
           </div>
