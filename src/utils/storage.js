@@ -1,18 +1,11 @@
-﻿const KEY = "moodEntries";
-export const loadEntries = () => {
-  try { return JSON.parse(localStorage.getItem(KEY) || "{}"); }
-  catch { return {}; }
-};
-export const saveEntries = (entries) =>
-  localStorage.setItem(KEY, JSON.stringify(entries));
-export const upsertEntry = (entries, dateKey, mood, note) => {
-  const updated = { ...entries, [dateKey]: { mood, note, ts: new Date().toISOString() } };
-  saveEntries(updated);
-  return updated;
-};
-export const deleteEntry = (entries, dateKey) => {
-  const updated = { ...entries };
-  delete updated[dateKey];
-  saveEntries(updated);
-  return updated;
-};
+﻿const MOODS_KEY = "customMoods";
+const JOURNAL_KEY = (id) => "journal_" + id;
+const IMAGE_KEY   = (id) => "image_"   + id;
+export const loadCustomMoods  = () => { try { return JSON.parse(localStorage.getItem(MOODS_KEY) || "[]"); } catch { return []; } };
+export const saveCustomMoods  = (m) => localStorage.setItem(MOODS_KEY, JSON.stringify(m));
+export const loadJournal      = (id) => { try { return JSON.parse(localStorage.getItem(JOURNAL_KEY(id)) || "[]"); } catch { return []; } };
+export const saveJournal      = (id, e) => localStorage.setItem(JOURNAL_KEY(id), JSON.stringify(e));
+export const addJournalEntry  = (id, text) => { const e = loadJournal(id); const n = { id: Date.now(), text, ts: new Date().toISOString() }; const u = [n, ...e]; saveJournal(id, u); return u; };
+export const deleteJournalEntry = (id, eid) => { const u = loadJournal(id).filter((e) => e.id !== eid); saveJournal(id, u); return u; };
+export const loadImage        = (id) => localStorage.getItem(IMAGE_KEY(id)) || null;
+export const saveImage        = (id, b64) => localStorage.setItem(IMAGE_KEY(id), b64);
