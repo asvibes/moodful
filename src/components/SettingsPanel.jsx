@@ -63,7 +63,7 @@ export function SettingsPanel({ homeBg, homeBgColor, onBgPhoto, onBgColor, onRes
                 <div>
                   <p style={{ fontSize:11, color:"#666", margin:"0 0 6px" }}>Fit Mode</p>
                   <div style={{ display:"flex", gap:6 }}>
-                    {["cover","contain","fill"].map(f => (
+                    {["cover","fill"].map(f => (
                       <button key={f} onClick={()=>updateImgPos("fit",f)}
                         style={{ flex:1, padding:"6px 0", borderRadius:8, border:"1px solid "+((imgPos.fit||"cover")===f?"rgba(255,255,255,0.4)":"rgba(255,255,255,0.1)"), background:(imgPos.fit||"cover")===f?"rgba(255,255,255,0.15)":"transparent", color:"#fff", fontSize:11, cursor:"pointer", fontWeight:(imgPos.fit||"cover")===f?700:400 }}>
                         {f}

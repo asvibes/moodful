@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { loadJournal, addJournalEntry, deleteJournalEntry, updateEntryPos, loadImage, saveImage, removeImage, loadBgColor, saveBgColor, loadStickers, saveStickers } from "../utils/storage";
 import { AuroraBackground } from "./AuroraBackground";
 import { DraggableItem } from "./DraggableItem";
@@ -86,14 +86,14 @@ export function JournalPage({ mood, onBack }) {
               <p style={{fontSize:11,color:"#888",margin:"0 0 8px",letterSpacing:1,textTransform:"uppercase"}}>Background</p>
               <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:16}}>
                 <label style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:10,padding:"10px 12px",cursor:"pointer",color:"#fff",fontSize:13,display:"flex",alignItems:"center",gap:8}}>
-                  <span>🖼️</span> Change Photo
+                  <span>???</span> Change Photo
                   <input type="file" accept="image/*" onChange={(e)=>{ handleBgImage(e); setSettingsOpen(false); }} style={{display:"none"}} />
                 </label>
                 <label style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:10,padding:"10px 12px",cursor:"pointer",color:"#fff",fontSize:13,display:"flex",alignItems:"center",gap:8,position:"relative"}}>
-                  <span>🎨</span> Set Color
+                  <span>??</span> Set Color
                   <input type="color" defaultValue={bgColor||mood.color} onChange={(e)=>{ saveBgColor(mood.id,e.target.value); setBgColor(e.target.value); setImage(null); }} style={{position:"absolute",opacity:0,inset:0,width:"100%",height:"100%",cursor:"pointer"}} />
                 </label>
-                {(image||bgColor) && <button onClick={()=>{ removeImage(mood.id); setImage(null); saveBgColor(mood.id,""); setBgColor(null); setSettingsOpen(false); }} style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:10,padding:"10px 12px",color:"#aaa",fontSize:13,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:8}}><span>🌌</span> Reset to Aurora</button>}
+                {(image||bgColor) && <button onClick={()=>{ removeImage(mood.id); setImage(null); saveBgColor(mood.id,""); setBgColor(null); setSettingsOpen(false); }} style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:10,padding:"10px 12px",color:"#aaa",fontSize:13,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:8}}><span>??</span> Reset to Aurora</button>}
               </div>
               {/* Image adjustment */}
               {image && (<>
@@ -102,7 +102,7 @@ export function JournalPage({ mood, onBack }) {
                   <div>
                     <p style={{fontSize:11,color:"#666",margin:"0 0 6px"}}>Fit Mode</p>
                     <div style={{display:"flex",gap:6}}>
-                      {["cover","contain","fill"].map(f=>(
+                      {["cover","fill"].map(f=>(
                         <button key={f} onClick={()=>updateImgPos("fit",f)}
                           style={{flex:1,padding:"6px 0",borderRadius:8,border:"1px solid "+((imgPos.fit||"cover")===f?"rgba(255,255,255,0.4)":"rgba(255,255,255,0.1)"),background:(imgPos.fit||"cover")===f?"rgba(255,255,255,0.15)":"transparent",color:"#fff",fontSize:11,cursor:"pointer",fontWeight:(imgPos.fit||"cover")===f?700:400}}>
                           {f}
@@ -116,9 +116,9 @@ export function JournalPage({ mood, onBack }) {
                       <p style={{fontSize:11,color:"#888",margin:0}}>{imgPos.x||50}%</p>
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:8}}>
-                      <span style={{fontSize:12,color:"#666"}}>←</span>
+                      <span style={{fontSize:12,color:"#666"}}>?</span>
                       <input type="range" min="0" max="100" step="1" value={imgPos.x||50} onChange={(e)=>updateImgPos("x",parseInt(e.target.value))} style={{flex:1,accentColor:mood.color,cursor:"pointer"}} />
-                      <span style={{fontSize:12,color:"#666"}}>→</span>
+                      <span style={{fontSize:12,color:"#666"}}>?</span>
                     </div>
                   </div>
                   <div>
@@ -127,9 +127,9 @@ export function JournalPage({ mood, onBack }) {
                       <p style={{fontSize:11,color:"#888",margin:0}}>{imgPos.y||50}%</p>
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:8}}>
-                      <span style={{fontSize:12,color:"#666"}}>↑</span>
+                      <span style={{fontSize:12,color:"#666"}}>?</span>
                       <input type="range" min="0" max="100" step="1" value={imgPos.y||50} onChange={(e)=>updateImgPos("y",parseInt(e.target.value))} style={{flex:1,accentColor:mood.color,cursor:"pointer"}} />
-                      <span style={{fontSize:12,color:"#666"}}>↓</span>
+                      <span style={{fontSize:12,color:"#666"}}>?</span>
                     </div>
                   </div>
                   <button onClick={resetImgAdj} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,padding:"7px 0",color:"#888",fontSize:12,cursor:"pointer",width:"100%"}}>Reset Position</button>
@@ -138,9 +138,9 @@ export function JournalPage({ mood, onBack }) {
               {/* Brightness */}
               <p style={{fontSize:11,color:"#888",margin:"0 0 8px",letterSpacing:1,textTransform:"uppercase"}}>Overlay Darkness</p>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
-                <span style={{fontSize:16}}>☀️</span>
+                <span style={{fontSize:16}}>??</span>
                 <input type="range" min="0" max="0.85" step="0.05" value={brightness} onChange={(e)=>setBright(parseFloat(e.target.value))} style={{flex:1,accentColor:mood.color,cursor:"pointer"}} />
-                <span style={{fontSize:16}}>🌑</span>
+                <span style={{fontSize:16}}>??</span>
               </div>
               <p style={{fontSize:11,color:"#555",textAlign:"center",margin:0}}>{Math.round((1-brightness)*100)}% brightness</p>
             </div>
@@ -155,7 +155,7 @@ export function JournalPage({ mood, onBack }) {
                 <div style={{width:10,height:10,borderRadius:"50%",background:"#FBBF24"}} />
                 <div style={{width:10,height:10,borderRadius:"50%",background:"#34D399"}} />
               </div>
-              <p style={{fontSize:11,fontWeight:700,color:mood.color,letterSpacing:1,textTransform:"uppercase",margin:0}}>New Entry — drag me!</p>
+              <p style={{fontSize:11,fontWeight:700,color:mood.color,letterSpacing:1,textTransform:"uppercase",margin:0}}>New Entry � drag me!</p>
               <div style={{fontSize:10,color:"#444"}}>{entries.length} entries</div>
             </div>
             <textarea value={text} onChange={(e)=>setText(e.target.value)} placeholder="Write freely..." rows={4}
@@ -179,7 +179,7 @@ export function JournalPage({ mood, onBack }) {
                 <button onClick={()=>remove(entry.id)} style={{background:"rgba(220,38,38,0.3)",border:"none",borderRadius:6,padding:"2px 7px",fontSize:10,color:"#ff8888",cursor:"pointer"}}>x</button>
               </div>
               <p style={{fontFamily:"Lora,Georgia,serif",fontSize:14,lineHeight:1.7,color:"#e0e0e0",margin:0,whiteSpace:"pre-wrap",wordBreak:"break-word"}}>{entry.text}</p>
-              <p style={{fontSize:10,color:"rgba(255,255,255,0.3)",margin:"8px 0 0"}}>{fmtDate(entry.ts)} · {fmtTime(entry.ts)}</p>
+              <p style={{fontSize:10,color:"rgba(255,255,255,0.3)",margin:"8px 0 0"}}>{fmtDate(entry.ts)} � {fmtTime(entry.ts)}</p>
             </div>
           </DraggableItem>
         ))}
