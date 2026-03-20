@@ -1,11 +1,14 @@
 ﻿import { useState, useEffect } from "react";
-import { loadJournal, addJournalEntry, deleteJournalEntry, loadImage } from "../utils/storage";
+import { loadJournal, addJournalEntry, deleteJournalEntry, loadImage, loadBgColor } from "../utils/storage";
+import { AuroraBackground } from "./AuroraBackground";
 import { MONTHS } from "../constants/moods";
 const fmtDate = (ts) => { const d = new Date(ts); return MONTHS[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear(); };
+const fmtTime = (ts) => new Date(ts).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
 export function JournalPage({ mood, onBack }) {
   const [entries, setEntries] = useState(() => loadJournal(mood.id));
   const [text, setText] = useState("");
   const [image] = useState(() => loadImage(mood.id));
+  const [bgColor] = useState(() => loadBgColor(mood.id));
   const [animIn, setAnimIn] = useState(false);
   useEffect(() => { setTimeout(() => setAnimIn(true), 10); }, []);
   const save = () => { if (!text.trim()) return; setEntries(addJournalEntry(mood.id, text.trim())); setText(""); };
@@ -13,12 +16,12 @@ export function JournalPage({ mood, onBack }) {
   const goBack = () => { setAnimIn(false); setTimeout(onBack, 350); };
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 100, background: "#0F0F13", transform: animIn ? "translateX(0)" : "translateX(100%)", transition: "transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)", overflowY: "auto" }}>
-      <div style={{ position: "relative", height: 240, background: image ? "#000" : mood.bg, overflow: "hidden" }}>
-        {image && <img src={image} alt={mood.label} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }} />}
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.1) 100%)" }} />
-        <button onClick={goBack} style={{ position: "absolute", top: 20, left: 20, background: "rgba(255,255,255,0.12)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 12, padding: "8px 18px", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "Fraunces, Georgia, serif" }}>
-          Back
-        </button>
+      <div style={{ position: "relative", height: 260, overflow: "hidden" }}>
+        {image ? <img src={image} alt={mood.label} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          : bgColor ? <div style={{ position: "absolute", inset: 0, background: bgColor }} />
+          : <AuroraBackground colors={mood.aurora} />}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 100%)" }} />
+        <button onClick={goBack} style={{ position: "absolute", top: 20, left: 20, background: "rgba(255,255,255,0.12)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 12, padding: "8px 18px", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "Fraunces, Georgia, serif" }}>Back</button>
         <div style={{ position: "absolute", bottom: 22, left: 24 }}>
           <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 11, margin: 0, letterSpacing: 1, textTransform: "uppercase" }}>Journal</p>
           <h1 style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: 34, fontWeight: 700, color: "#fff", margin: "4px 0 0", textShadow: "0 2px 16px rgba(0,0,0,0.4)" }}>{mood.label}</h1>
@@ -47,7 +50,7 @@ export function JournalPage({ mood, onBack }) {
               <div key={entry.id} style={{ background: "#1a1a20", borderRadius: 18, padding: "16px 18px", border: "1px solid #2a2a30" }}>
                 <p style={{ fontFamily: "Lora, Georgia, serif", fontSize: 15, lineHeight: 1.75, color: "#d0d0d0", margin: 0, whiteSpace: "pre-wrap" }}>{entry.text}</p>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12 }}>
-                  <p style={{ fontSize: 11, color: "#555", margin: 0 }}>{fmtDate(entry.ts)}</p>
+                  <p style={{ fontSize: 11, color: "#555", margin: 0 }}>{fmtDate(entry.ts)} · {fmtTime(entry.ts)}</p>
                   <button onClick={() => remove(entry.id)} style={{ fontSize: 11, color: "#EF4444", background: "#2a1a1a", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer" }}>Delete</button>
                 </div>
               </div>

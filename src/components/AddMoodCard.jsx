@@ -33,7 +33,7 @@ export function AddMoodCard({ onAdd }) {
           {COLORS.map((c) => <div key={c} onClick={() => setColor(c)} style={{ width: 22, height: 22, borderRadius: "50%", background: c, cursor: "pointer", border: color === c ? "3px solid #fff" : "2px solid transparent", transition: "border 0.15s" }} />)}
         </div>
         <label style={{ width: "100%", padding: "7px 0", borderRadius: 10, border: "2px dashed #444", background: "transparent", fontSize: 12, cursor: "pointer", color: preview ? "#52B788" : "#888", textAlign: "center", display: "block" }}>
-          {preview ? "Photo added!" : "+ Upload Photo"}
+          {preview ? "Photo added!" : "+ Upload Photo (optional)"}
           <input type="file" accept="image/*" onChange={handleImage} style={{ display: "none" }} />
         </label>
         <div style={{ display: "flex", gap: 8, width: "100%" }}>
