@@ -1,11 +1,11 @@
-import { MOOD_MAP } from "../constants/moods";
+﻿import { MOOD_MAP } from "../constants/moods";
 const SIZES = {
-  sm: { padding: "5px 12px",  emoji: 16, font: 11 },
-  md: { padding: "8px 18px",  emoji: 20, font: 13 },
+  sm: { padding: "5px 12px", emoji: 16, font: 11 },
+  md: { padding: "8px 18px", emoji: 20, font: 13 },
   lg: { padding: "12px 22px", emoji: 28, font: 15 },
 };
 export function MoodPill({ mood, size = "md", selected = false, onClick }) {
-  const m  = MOOD_MAP[mood];
+  const m = MOOD_MAP[mood];
   const sz = SIZES[size] ?? SIZES.md;
   return (
     <button onClick={onClick} style={{

@@ -1,4 +1,4 @@
-import { MOODS } from "../constants/moods";
+﻿import { MOODS } from "../constants/moods";
 export const avgMood = (entries, keys) => {
   const vals = keys.map((k) => entries[k]?.mood).filter(Boolean);
   return vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) : null;
@@ -6,11 +6,11 @@ export const avgMood = (entries, keys) => {
 export const moodLabel = (avg) => {
   if (!avg) return "—";
   const n = parseFloat(avg);
-  if (n >= 4.5) return "Radiant ✨";
-  if (n >= 3.5) return "Good 🌿";
-  if (n >= 2.5) return "Okay ☁️";
-  if (n >= 1.5) return "Low 🌧️";
-  return "Rough 🌑";
+  if (n >= 4.5) return "Radiant";
+  if (n >= 3.5) return "Good";
+  if (n >= 2.5) return "Okay";
+  if (n >= 1.5) return "Low";
+  return "Rough";
 };
 export const calcStreak = (entries) => {
   let streak = 0;

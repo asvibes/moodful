@@ -1,4 +1,4 @@
-const KEY = "moodEntries";
+﻿const KEY = "moodEntries";
 export const loadEntries = () => {
   try { return JSON.parse(localStorage.getItem(KEY) || "{}"); }
   catch { return {}; }

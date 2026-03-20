@@ -1,4 +1,4 @@
-export function StatCard({ label, value }) {
+﻿export function StatCard({ label, value }) {
   return (
     <div style={{ flex: 1, background: "#F8F8FC", borderRadius: 12, padding: "10px 14px" }}>
       <p style={{ fontSize: 11, color: "#9CA3AF", margin: 0, letterSpacing: 0.5, textTransform: "uppercase" }}>
