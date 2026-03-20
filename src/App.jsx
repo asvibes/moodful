@@ -4,14 +4,17 @@ import { MoodCard } from "./components/MoodCard";
 import { AddMoodCard } from "./components/AddMoodCard";
 import { JournalPage } from "./components/JournalPage";
 import { InsightsPage } from "./components/InsightsPage";
-import { GlitterCursor } from "./components/GlitterCursor";
 import { AuroraBackground } from "./components/AuroraBackground";
+import { SettingsPanel } from "./components/SettingsPanel";
 export default function App() {
   const { allMoods, addMood, deleteMood } = useMoods();
   const [activeMood, setActiveMood] = useState(null);
   const [showInsights, setShowInsights] = useState(false);
   const [homeBg, setHomeBg] = useState(null);
   const [homeBgColor, setHomeBgColor] = useState(null);
+  const handleBgPhoto = (e) => { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=(ev)=>{ setHomeBg(ev.target.result); setHomeBgColor(null); }; r.readAsDataURL(f); };
+  const handleBgColor = (color) => { setHomeBgColor(color); setHomeBg(null); };
+  const handleReset = () => { setHomeBg(null); setHomeBgColor(null); };
   return (
     <>
       <style>{`
@@ -20,7 +23,6 @@ export default function App() {
         ::-webkit-scrollbar{width:4px;}
         ::-webkit-scrollbar-thumb{background:#2a2a30;border-radius:4px;}
       `}</style>
-      <GlitterCursor color="#aaaaff" />
       {activeMood && <JournalPage mood={activeMood} onBack={()=>setActiveMood(null)} />}
       {showInsights && <InsightsPage allMoods={allMoods} onBack={()=>setShowInsights(false)} />}
       <div style={{position:"fixed",inset:0,zIndex:0,overflow:"hidden"}}>
@@ -37,15 +39,7 @@ export default function App() {
               <p style={{fontSize:14,color:"rgba(255,255,255,0.4)"}}>tap a mood to open your journal</p>
             </div>
             <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-              <label style={{background:"rgba(255,255,255,0.12)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:10,padding:"8px 14px",fontSize:12,color:"#fff",cursor:"pointer",fontWeight:600}}>
-                BG Photo
-                <input type="file" accept="image/*" onChange={(e)=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=(ev)=>{setHomeBg(ev.target.result);setHomeBgColor(null);};r.readAsDataURL(f);}} style={{display:"none"}} />
-              </label>
-              <label style={{background:"rgba(255,255,255,0.12)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:10,padding:"8px 14px",fontSize:12,color:"#fff",cursor:"pointer",fontWeight:600,position:"relative"}}>
-                BG Color
-                <input type="color" onChange={(e)=>{setHomeBgColor(e.target.value);setHomeBg(null);}} style={{position:"absolute",opacity:0,inset:0,width:"100%",height:"100%",cursor:"pointer"}} />
-              </label>
-              {(homeBg||homeBgColor)&&<button onClick={()=>{setHomeBg(null);setHomeBgColor(null);}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:10,padding:"8px 12px",fontSize:12,color:"#aaa",cursor:"pointer"}}>Reset</button>}
+              <SettingsPanel homeBg={homeBg} homeBgColor={homeBgColor} onBgPhoto={handleBgPhoto} onBgColor={handleBgColor} onReset={handleReset} />
               <button onClick={()=>setShowInsights(true)} style={{background:"linear-gradient(135deg,#54A0FF,#5F27CD)",border:"none",borderRadius:14,padding:"10px 20px",color:"#fff",fontFamily:"Fraunces,Georgia,serif",fontSize:13,fontWeight:700,cursor:"pointer",boxShadow:"0 4px 20px #54A0FF40"}}>AI Insights</button>
             </div>
           </div>
