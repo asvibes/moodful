@@ -40,7 +40,7 @@ export default function App() {
       `}</style>
       {activeMood && <JournalPage mood={activeMood} onBack={()=>setActiveMood(null)} />}
       {showInsights && <InsightsPage allMoods={allMoods} onBack={()=>setShowInsights(false)} />}
-      <div style={{position:"fixed",inset:0,zIndex:0,overflow:"hidden",visibility:activeMood||showInsights?"hidden":"visible"}}>
+      <div style={{position:"fixed",inset:0,zIndex:0,overflow:"hidden",visibility:activeMood||showInsights?"hidden":"visible",visibility:activeMood||showInsights?"hidden":"visible"}}>
         {homeBg
           ? <img src={homeBg} alt="" style={imgStyle} />
           : homeBgColor
