@@ -28,8 +28,8 @@ export default function App() {
   const handleReset = () => { setHomeBg(null); setHomeBgColor(null); localStorage.removeItem("homeBg"); localStorage.removeItem("homeBgColor"); };
   const handleBrightness = (v) => { setBrightness(v); localStorage.setItem("homeBrightness", v); };
   // Listen for imgPos changes from SettingsPanel via localStorage
-  const handleImgPosChange = () => setImgPos(loadHomeImgPos());
-  const imgStyle = { width:"100%", height:"100%", objectFit:imgPos.fit||"cover", objectPosition:(imgPos.x||50)+"% "+(imgPos.y||50)+"%", transition:"object-position 0.2s" };
+  const handleImgPosChange = () => { setImgPos(loadHomeImgPos()); };
+  const imgStyle = { width:"100%", height:"100%", objectFit:imgPos.fit||"cover",objectPosition:(imgPos.x||50)+"% "+(imgPos.y||50)+"%", transition:"object-position 0.2s" };
   return (
     <>
       <style>{`

@@ -1,7 +1,7 @@
 import { useState } from "react";
 const BRIGHT_KEY = "homeBrightness";
 const IMG_POS_KEY = "homeImgPos";
-export function SettingsPanel({ homeBg, homeBgColor, onBgPhoto, onBgColor, onReset, brightness, onBrightness }) {
+export function SettingsPanel({ homeBg, homeBgColor, onBgPhoto, onBgColor, onReset, brightness, onBrightness, onImgPosChange }) {
   const [open, setOpen] = useState(false);
   const [imgPos, setImgPos] = useState(() => { try { return JSON.parse(localStorage.getItem(IMG_POS_KEY) || "{}"); } catch { return {}; } });
   const updateImgPos = (key, val) => {
